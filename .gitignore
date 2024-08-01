@@ -1,1 +1,4 @@
 config/secrets.json
+src/__pycache__/
+ingest-document-api-env/
+.DS_Store
