@@ -1,0 +1,4 @@
+llmsherpa==0.1.4
+peewee==3.17.6
+psycopg2==2.9.9
+urllib3==2.2.2
