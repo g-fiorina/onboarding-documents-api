@@ -3,3 +3,4 @@ config/secrets.json
 src/__pycache__/
 *.py[cod]
 ingest-document-api-env/
+.env
