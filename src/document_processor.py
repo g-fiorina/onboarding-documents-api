@@ -2,50 +2,24 @@ from llmsherpa import readers
 import requests
 import fitz  # PyMuPDF
 import os
-import json
+from dotenv import load_dotenv
 
-with open("config/config.json") as f:
-    config = json.load(f)
-    llmsherpa_api_url = config["LLMSHERPA_API_URL"]
+load_dotenv(override=True)
 
-
-def download_pdf(pdf_url):
-    response = requests.get(pdf_url)
-    response.raise_for_status()
-
-    pdf_path = "temp.pdf"
-
-    with open(pdf_path, "wb") as pdf_file:
-        pdf_file.write(response.content)
-
-    return pdf_path
-
-
-def convert_pdf_to_markdown(pdf_path):
-    pdf_reader = readers.file_reader.LayoutPDFReader(llmsherpa_api_url)
-    document = pdf_reader.read_pdf(path_or_url=pdf_path)
-    markdown_text = document.to_text()
-
-    return markdown_text
-
-
-def extract_pdf_title(pdf_path):
-    pdf_document = fitz.open(pdf_path)
-    metadata = pdf_document.metadata
-    title = metadata.get("title", "No Title Found")
-    pdf_document.close()
-
-    return title
+llmsherpa_api_url = os.getenv("LLMSHERPA_API_URL")
 
 
 def process_pdf(pdf_url):
-    pdf_path = download_pdf(pdf_url)
+    response = requests.get(url=pdf_url, timeout=100)
+    response.raise_for_status()
 
-    try:
-        markdown_text = convert_pdf_to_markdown(pdf_path)
-        title = extract_pdf_title(pdf_path)
+    pdf_reader = readers.file_reader.LayoutPDFReader(llmsherpa_api_url)
+    document = pdf_reader.read_pdf(path_or_url="", contents=response.content)
 
-    finally:
-        os.remove(pdf_path)
+    markdown_text = document.to_text()
+
+    pdf_document = fitz.open(stream=response.content, filetype="pdf")
+    title = pdf_document.metadata.get("title", "No Title Found")
+    pdf_document.close()
 
     return title, markdown_text
